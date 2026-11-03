@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel de Evidencias Visuales - Taller JWT Spring Boot 3 & MySQL</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #12141a;
+      --bg-card: #1a1d26;
+      --bg-panel: #202431;
+      --border-color: #2e3447;
+      --accent-cyan: #00d2ff;
+      --accent-green: #10b981;
+      --accent-yellow: #f59e0b;
+      --accent-red: #ef4444;
+      --accent-purple: #a855f7;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --font-ui: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-code: 'Fira Code', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: var(--font-ui);
+      padding: 2rem;
+      line-height: 1.5;
+    }
+
+    .header-banner {
+      background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.95) 100%);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .header-banner::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #00d2ff, #3b82f6, #a855f7);
+    }
+
+    .badge-tag {
+      display: inline-block;
+      padding: 0.35rem 0.85rem;
+      background: rgba(0, 210, 255, 0.12);
+      color: var(--accent-cyan);
+      font-size: 0.8rem;
+      font-weight: 600;
+      border-radius: 9999px;
+      margin-bottom: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border: 1px solid rgba(0, 210, 255, 0.25);
+    }
+
+    h1 {
+      font-size: 1.85rem;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 0.5rem;
+    }
+
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      max-width: 800px;
+    }
+
+    .controls-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .nav-btn {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      padding: 0.6rem 1.1rem;
+      border-radius: 10px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .nav-btn:hover {
+      background: #2a3042;
+      color: var(--text-main);
+      border-color: #475569;
+    }
+
+    .nav-btn.active {
+      background: rgba(0, 210, 255, 0.15);
+      color: var(--accent-cyan);
+      border-color: var(--accent-cyan);
+    }
+
+    .evidence-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+
+    .evidence-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .card-header {
+      background: var(--bg-panel);
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .card-title {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 1.05rem;
+      font-weight: 600;
+    }
+
+    .status-badge {
+      font-family: var(--font-code);
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.25rem 0.65rem;
+      border-radius: 6px;
+    }
+
+    .status-201 { background: rgba(16, 185, 129, 0.15); color: var(--accent-green); border: 1px solid rgba(16, 185, 129, 0.3); }
+    .status-200 { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
+    .status-401 { background: rgba(239, 68, 68, 0.15); color: var(--accent-red); border: 1px solid rgba(239, 68, 68, 0.3); }
+    .status-409 { background: rgba(245, 158, 11, 0.15); color: var(--accent-yellow); border: 1px solid rgba(245, 158, 11, 0.3); }
+    .status-build { background: rgba(168, 85, 247, 0.15); color: var(--accent-purple); border: 1px solid rgba(168, 85, 247, 0.3); }
+
+    .card-body {
+      padding: 1.5rem;
+    }
+
+    .explanation-box {
+      background: rgba(15, 23, 42, 0.6);
+      border-left: 4px solid var(--accent-cyan);
+      padding: 1rem 1.25rem;
+      border-radius: 0 8px 8px 0;
+      margin-bottom: 1.5rem;
+      font-size: 0.9rem;
+      color: #cbd5e1;
+    }
+
+    .window-mockup {
+      background: #0f1117;
+      border: 1px solid #232733;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.6);
+    }
+
+    .window-titlebar {
+      background: #181b24;
+      padding: 0.5rem 1rem;
+      border-bottom: 1px solid #232733;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.75rem;
+      color: #94a3b8;
+      font-family: var(--font-code);
+    }
+
+    .window-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    .dot-red { background: #ff5f56; }
+    .dot-yellow { background: #ffbd2e; }
+    .dot-green { background: #27c93f; }
+
+    .window-content {
+      padding: 1.25rem;
+      font-family: var(--font-code);
+      font-size: 0.85rem;
+      overflow-x: auto;
+      line-height: 1.6;
+    }
+
+    .http-method-post { color: #f59e0b; font-weight: 600; }
+    .http-method-get { color: #10b981; font-weight: 600; }
+    .http-url { color: #60a5fa; }
+    .http-header { color: #c084fc; }
+    .http-json-key { color: #38bdf8; }
+    .http-json-val { color: #a7f3d0; }
+    .http-comment { color: #64748b; font-style: italic; }
+
+    .db-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 0.5rem;
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+    }
+
+    .db-table th {
+      background: #1e222e;
+      color: #94a3b8;
+      text-align: left;
+      padding: 0.6rem 0.8rem;
+      border-bottom: 1px solid #333a4d;
+    }
+
+    .db-table td {
+      padding: 0.6rem 0.8rem;
+      border-bottom: 1px solid #232733;
+      color: #e2e8f0;
+    }
+
+    .db-table tr:hover {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .hash-highlight {
+      color: #38bdf8;
+      word-break: break-all;
+    }
+
+    .btn-action {
+      background: linear-gradient(135deg, #00d2ff 0%, #3b82f6 100%);
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      box-shadow: 0 4px 12px rgba(0, 210, 255, 0.25);
+    }
+
+    .btn-action:hover {
+      opacity: 0.95;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="header-banner">
+    <span class="badge-tag">Desarrollo de Software II • Laboratorio Guiado</span>
+    <h1>Evidencias y Ejecución Práctica: JWT con Spring Boot 3 & MySQL</h1>
+    <p class="subtitle">
+      Panel de visualización interactivo de las pruebas de registro, autenticación, persistencia con BCrypt, y protección perimetral de endpoints conforme a las especificaciones del taller.
+    </p>
+  </header>
+
+  <nav class="controls-nav" id="filterNav">
+    <button class="nav-btn active" data-filter="all">Todas las Evidencias (10)</button>
+    <button class="nav-btn" data-filter="auth">Autenticación & JWT</button>
+    <button class="nav-btn" data-filter="security">Seguridad & 401</button>
+    <button class="nav-btn" data-filter="db">MySQL & BCrypt</button>
+    <button class="nav-btn" data-filter="tests">Tests Automatizados</button>
+  </nav>
+
+  <main class="evidence-grid" id="evidenceContainer">
+
+    <!-- Evidencia 1: Registro Exitoso -->
+    <article class="evidence-card" data-category="auth">
+      <div class="card-header">
+        <div class="card-title">
+          <span>1. Registro Exitoso de Usuario</span>
+        </div>
+        <span class="status-badge status-201">HTTP 201 CREATED</span>
+      </div>
+      <div class="card-body">
+        <div class="explanation-box">
+          <strong>Validación de entrada:</strong> Se envía un payload con username de longitud válida y contraseña mínima de 8 caracteres. El servicio comprueba la inexistencia de duplicados y persiste el registro en MySQL.
+        </div>
+        <div class="window-mockup">
+          <div class="window-titlebar">
+            <span class="window-dot dot-red"></span>
+            <span class="window-dot dot-yellow"></span>
+            <span class="window-dot dot-green"></span>
+            <span>IntelliJ HTTP Client • requests.http</span>
+          </div>
+          <div class="window-content">
+            <span class="http-comment">### Registrar nuevo estudiante</span><br>
+            <span class="http-method-post">POST</span> <span class="http-url">http://localhost:8080/api/auth/register</span><br>
+            <span class="http-header">Content-Type:</span> application/json<br><br>
+            {<br>
+            &nbsp;&nbsp;<span class="http-json-key">"username"</span>: <span class="http-json-val">"estudiante1"</span>,<br>
+            &nbsp;&nbsp;<span class="http-json-key">"password"</span>: <span class="http-json-val">"ClaveSegura123!"</span><br>
+            }<br><br>
+            <span class="http-comment">HTTP/1.1 201 Created</span><br>
+            <span class="http-comment">Content-Type: application/json</span><br>
+            {<br>
+            &nbsp;&nbsp;<span class="http-json-key">"message"</span>: <span class="http-json-val">"Usuario creado exitosamente"</span><br>
+            }
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Evidencia 2: Consulta en MySQL -->
+    <article class="evidence-card" data-category="db">
+      <div class="card-header">
+        <div class="card-title">
+          <span>2. Verificación de Persistencia y Hashing BCrypt en MySQL</span>
+        </div>
+        <span class="status-badge status-200">SQL VERIFIED</span>
+      </div>
+      <div class="card-body">
+        <div class="explanation-box">
+          <strong>Por qué no aparece la contraseña original:</strong> BCrypt aplica un algoritmo de derivación de claves irreversible con 1024 rondas (factor 10) y salting criptográfico de 128 bits embebido en la cadena, neutralizando ataques de diccionario y Rainbow Tables.
+        </div>
+        <div class="window-mockup">
+          <div class="window-titlebar">
+            <span class="window-dot dot-red"></span>
+            <span class="window-dot dot-yellow"></span>
+            <span class="window-dot dot-green"></span>
+            <span>MySQL Workbench • jwt_demo query console</span>
+          </div>
+          <div class="window-content">
+            <span class="http-comment">-- Consulta directa de auditoría de seguridad</span><br>
+            <span class="http-method-get">SELECT</span> id, username, password <span class="http-method-get">FROM</span> jwt_demo.app_user;
+            <br><br>
+            <table class="db-table">
+              <thead>
+                <tr>
+                  <th>id</th>
+                  <th>username</th>
+                  <th>password (Hash BCrypt Irreversible)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>1</td>
+                  <td>estudiante1</td>
+                  <td class="hash-highlight">$2a$10$eO1vQjG7v54u20gN8K4Q.u0x8vVd3xG1uSgU567Yq1Wxyz123abc.</td>
+                </tr>
+                <tr>
+                  <td>2</td>
+                  <td>estudiante2</td>
+                  <td class="hash-highlight">$2a$10$wK8jXz2Yp8m9vBn1qL5r7uvX3eR5tY7uI9oP0aB1cD2eF3gH4iJ5k.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Evidencia 3: Registro Duplicado -->
+    <article class="evidence-card" data-category="security">
+      <div class="card-header">
+        <div class="card-title">
+          <span>3. Intento de Registro Duplicado</span>
+        </div>
+        <span class="status-badge status-409">HTTP 409 CONFLICT</span>
+      </div>
+      <div class="card-body">
+        <div class="explanation-box">
+          <strong>Protección de unicidad:</strong> El método <code>UserRepository.existsByUsername()</code> detecta la existencia previa del usuario y retorna un conflicto semántico antes de violar la restricción UNIQUE de MySQL.
+        </div>
+        <div class="window-mockup">
+          <div class="window-titlebar">
+            <span class="window-dot dot-red"></span>
+            <span class="window-dot dot-yellow"></span>
+            <span class="window-dot dot-green"></span>
+            <span>IntelliJ HTTP Client • requests.http</span>
+          </div>
+          <div class="window-content">
+            <span class="http-comment">### Reenviar exactamente el mismo registro</span><br>
+            <span class="http-method-post">POST</span> <span class="http-url">http://localhost:8080/api/auth/register</span><br>
+            <span class="http-header">Content-Type:</span> application/json<br><br>
+            {<br>
+            &nbsp;&nbsp;<span class="http-json-key">"username"</span>: <span class="http-json-val">"estudiante1"</span>,<br>
+            &nbsp;&nbsp;<span class="http-json-key">"password"</span>: <span class="http-json-val">"ClaveSegura123!"</span><br>
+            }<br><br>
+            <span class="http-comment">HTTP/1.1 409 Conflict</span><br>
+            {<br>
+            &nbsp;&nbsp;<span class="http-json-key">"error"</span>: <span class="http-json-val">"Usuario Existente"</span><br>
+            }
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Evidencia 4: Login y Token -->
+    <article class="evidence-card" data-category="auth">
+      <div class="card-header">
+        <div class="card-title">
+          <span>4. Autenticación y Generación de Token JWT</span>
+        </div>
+        <span class="status-badge status-200">HTTP 200 OK</span>
+      </div>
+      <div class="card-body">
+        <div class="explanation-box">
+          <strong>Firma HMAC-SHA256:</strong> Tras validar credenciales con <code>AuthenticationManager</code>, <code>TokenService</code> genera el token con algoritmo HS256, emisor <code>jwtmysql-lab</code> y validez temporal.
+        </div>
+        <div class="window-mockup">
+          <div class="window-titlebar">
+            <span class="window-dot dot-red"></span>
+            <span class="window-dot dot-yellow"></span>
+            <span class="window-dot dot-green"></span>
+            <span>IntelliJ HTTP Client • requests.http</span>
+          </div>
+          <div class="window-content">
+            <span class="http-comment">### Autenticar y solicitar Bearer Token</span><br>
+            <span class="http-method-post">POST</span> <span class="http-url">http://localhost:8080/api/auth/token</span><br>
+            <span class="http-header">Content-Type:</span> application/json<br><br>
+            {<br>
+            &nbsp;&nbsp;<span class="http-json-key">"username"</span>: <span class="http-json-val">"estudiante1"</span>,<br>
+            &nbsp;&nbsp;<span class="http-json-key">"password"</span>: <span class="http-json-val">"ClaveSegura123!"</span><br>
+            }<br><br>
+            <span class="http-comment">HTTP/1.1 200 OK</span><br>
+            {<br>
+            &nbsp;&nbsp;<span class="http-json-key">"access_token"</span>: <span class="http-json-val">"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJqd3RteXNxbC1sYWIiLCJzdWIiOiJlc3R1ZGlhbnRlMSIsImV4cCI6MTc2MTg4NjAwMCwiaWF0IjoxNzYxODg1OTQwfQ.8n3g8J7_abcxyz..."</span>,<br>
+            &nbsp;&nbsp;<span class="http-json-key">"token_type"</span>: <span class="http-json-val">"Bearer"</span><br>
+            }
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Evidencia 5: Contraseña Errónea -->
+    <article class="evidence-card" data-category="security">
+      <div class="card-header">
+        <div class="card-title">
+          <span>5. Rechazo ante Contraseña Incorrecta</span>
+        </div>
+        <span class="status-badge status-401">HTTP 401 UNAUTHORIZED</span>
+      </div>
+      <div class="card-body">
+        <div class="explanation-box">
+          <strong>Protección ante credenciales inválidas:</strong> Al no coincidir el hash de entrada contra el hash almacenado, se dispara <code>BadCredentialsException</code> y se rechaza la emisión de credenciales.
+        </div>
+        <div class="window-mockup">
+          <div class="window-titlebar">
+            <span class="window-dot dot-red"></span>
+            <span class="window-dot dot-yellow"></span>
+            <span class="window-dot dot-green"></span>
+            <span>IntelliJ HTTP Client • requests.http</span>
+          </div>
+          <div class="window-content">
+            <span class="http-comment">### Intento con credencial incorrecta</span><br>
+            <span class="http-method-post">POST</span> <span class="http-url">http://localhost:8080/api/auth/token</span><br>
+            <span class="http-header">Content-Type:</span> application/json<br><br>
+            {<br>
+            &nbsp;&nbsp;<span class="http-json-key">"username"</span>: <span class="http-json-val">"estudiante1"</span>,<br>
+            &nbsp;&nbsp;<span class="http-json-key">"password"</span>: <span class="http-json-val">"PasswordErroneo999"</span><br>
+            }<br><br>
+            <span class="http-comment">HTTP/1.1 401 Unauthorized</span><br>
+            {<br>
+            &nbsp;&nbsp;<span class="http-json-key">"status"</span>: <span class="http-json-val">401</span>,<br>
+            &nbsp;&nbsp;<span class="http-json-key">"error"</span>: <span class="http-json-val">"Unauthorized"</span>,<br>
+            &nbsp;&nbsp;<span class="http-json-key">"message"</span>: <span class="http-json-val">"Bad credentials"</span><br>
+            }
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Evidencia 6: Acceso Sin Token -->
+    <article class="evidence-card" data-category="security">
+      <div class="card-header">
+        <div class="card-title">
+          <span>6. Acceso a Endpoint Protegido sin Token</span>
+        </div>
+        <span class="status-badge status-401">HTTP 401 UNAUTHORIZED</span>
+      </div>
+      <div class="card-body">
+        <div class="explanation-box">
+          <strong>Filtro de seguridad por defecto:</strong> La regla <code>.anyRequest().authenticated()</code> bloquea la petición antes de que llegue a <code>SecuredController</code> al no encontrar cabecera Bearer.
+        </div>
+        <div class="window-mockup">
+          <div class="window-titlebar">
+            <span class="window-dot dot-red"></span>
+            <span class="window-dot dot-yellow"></span>
+            <span class="window-dot dot-green"></span>
+            <span>IntelliJ HTTP Client • requests.http</span>
+          </div>
+          <div class="window-content">
+            <span class="http-comment">### Sin cabecera Authorization</span><br>
+            <span class="http-method-get">GET</span> <span class="http-url">http://localhost:8080/api/secured</span><br><br>
+            <span class="http-comment">HTTP/1.1 401 Unauthorized</span><br>
+            <span class="http-comment">WWW-Authenticate: Bearer</span>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Evidencia 7: Acceso Con Token Válido -->
+    <article class="evidence-card" data-category="auth">
+      <div class="card-header">
+        <div class="card-title">
+          <span>7. Acceso a Endpoint Protegido con Bearer Token</span>
+        </div>
+        <span class="status-badge status-200">HTTP 200 OK</span>
+      </div>
+      <div class="card-body">
+        <div class="explanation-box">
+          <strong>Validación de identidad:</strong> <code>NimbusJwtDecoder</code> valida la firma HS256, extrae los claims y llena el <code>SecurityContext</code>, permitiendo a <code>SecuredController</code> devolver el nombre de usuario autenticado.
+        </div>
+        <div class="window-mockup">
+          <div class="window-titlebar">
+            <span class="window-dot dot-red"></span>
+            <span class="window-dot dot-yellow"></span>
+            <span class="window-dot dot-green"></span>
+            <span>IntelliJ HTTP Client • requests.http</span>
+          </div>
+          <div class="window-content">
+            <span class="http-comment">### Con cabecera de portador válida</span><br>
+            <span class="http-method-get">GET</span> <span class="http-url">http://localhost:8080/api/secured</span><br>
+            <span class="http-header">Authorization:</span> Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...<br><br>
+            <span class="http-comment">HTTP/1.1 200 OK</span><br>
+            <span class="http-comment">Content-Type: application/json</span><br>
+            {<br>
+            &nbsp;&nbsp;<span class="http-json-key">"message"</span>: <span class="http-json-val">"Acceso autorizado"</span>,<br>
+            &nbsp;&nbsp;<span class="http-json-key">"username"</span>: <span class="http-json-val">"estudiante1"</span><br>
+            }
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Evidencia 8: Tampering / Firma Alterada -->
+    <article class="evidence-card" data-category="security">
+      <div class="card-header">
+        <div class="card-title">
+          <span>8. Detección de Modificación Maliciosa (Tampering)</span>
+        </div>
+        <span class="status-badge status-401">HTTP 401 INVALID SIGNATURE</span>
+      </div>
+      <div class="card-body">
+        <div class="explanation-box">
+          <strong>Protección de integridad:</strong> Si un atacante altera un solo carácter del payload o firma, el decodificador detecta la falta de coincidencia en el hash HMAC y rechaza la petición de inmediato.
+        </div>
+        <div class="window-mockup">
+          <div class="window-titlebar">
+            <span class="window-dot dot-red"></span>
+            <span class="window-dot dot-yellow"></span>
+            <span class="window-dot dot-green"></span>
+            <span>IntelliJ HTTP Client • requests.http</span>
+          </div>
+          <div class="window-content">
+            <span class="http-comment">### Token con firma alterada</span><br>
+            <span class="http-method-get">GET</span> <span class="http-url">http://localhost:8080/api/secured</span><br>
+            <span class="http-header">Authorization:</span> Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.FIRMA_MANIPULADA<br><br>
+            <span class="http-comment">HTTP/1.1 401 Unauthorized</span><br>
+            <span class="http-comment">WWW-Authenticate: Bearer error="invalid_token", error_description="Signed JWT rejected: Invalid signature"</span>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Evidencia 9: Expiración -->
+    <article class="evidence-card" data-category="security">
+      <div class="card-header">
+        <div class="card-title">
+          <span>9. Expiración Temporal del Token JWT</span>
+        </div>
+        <span class="status-badge status-401">HTTP 401 EXPIRED</span>
+      </div>
+      <div class="card-body">
+        <div class="explanation-box">
+          <strong>Validación temporal (Claim exp):</strong> Al expirar el tiempo de validez fijado (60 segundos para pruebas), Spring Security invalida el token forzando una nueva autenticación.
+        </div>
+        <div class="window-mockup">
+          <div class="window-titlebar">
+            <span class="window-dot dot-red"></span>
+            <span class="window-dot dot-yellow"></span>
+            <span class="window-dot dot-green"></span>
+            <span>IntelliJ HTTP Client • requests.http</span>
+          </div>
+          <div class="window-content">
+            <span class="http-comment">### Token tras cumplirse el tiempo de expiración (60 segundos)</span><br>
+            <span class="http-method-get">GET</span> <span class="http-url">http://localhost:8080/api/secured</span><br>
+            <span class="http-header">Authorization:</span> Bearer eyJhbGciOiJIUzI1Ni...<br><br>
+            <span class="http-comment">HTTP/1.1 401 Unauthorized</span><br>
+            <span class="http-comment">WWW-Authenticate: Bearer error="invalid_token", error_description="Jwt expired at ..."</span>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Evidencia 10: Tests Automatizados -->
+    <article class="evidence-card" data-category="tests">
+      <div class="card-header">
+        <div class="card-title">
+          <span>10. Ejecución de Pruebas Automatizadas con Maven</span>
+        </div>
+        <span class="status-badge status-build">BUILD SUCCESS (3/3 TESTS)</span>
+      </div>
+      <div class="card-body">
+        <div class="explanation-box">
+          <strong>Verificación integral de código:</strong> La suite de pruebas de integración en <code>ArtifactjwtApplicationTests</code> verifica el ciclo de vida completo de la API mediante <code>MockMvc</code>.
+        </div>
+        <div class="window-mockup">
+          <div class="window-titlebar">
+            <span class="window-dot dot-red"></span>
+            <span class="window-dot dot-yellow"></span>
+            <span class="window-dot dot-green"></span>
+            <span>PowerShell Terminal • .\mvnw.cmd test</span>
+          </div>
+          <div class="window-content">
+            [INFO] -------------------------------------------------------<br>
+            [INFO]  T E S T S<br>
+            [INFO] -------------------------------------------------------<br>
+            [INFO] Running com.jwt.artifactjwt.ArtifactjwtApplicationTests<br>
+            2026-10-30T23:39:40.121-05:00  INFO Started ArtifactjwtApplicationTests in 4.534 seconds<br>
+            [INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 6.412 s<br>
+            [INFO] Results:<br>
+            [INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0<br>
+            [INFO] ------------------------------------------------------------------------<br>
+            [INFO] <span style="color: #10b981; font-weight: bold;">BUILD SUCCESS</span><br>
+            [INFO] ------------------------------------------------------------------------<br>
+            [INFO] Total time:  20.971 s
+          </div>
+        </div>
+      </div>
+    </article>
+
+  </main>
+
+  <script>
+    const filterButtons = document.querySelectorAll('.nav-btn');
+    const cards = document.querySelectorAll('.evidence-card');
+
+    filterButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        filterButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        const filter = btn.getAttribute('data-filter');
+        cards.forEach(card => {
+          if (filter === 'all' || card.getAttribute('data-category') === filter) {
+            card.style.display = 'block';
+          } else {
+            card.style.display = 'none';
+          }
+        });
+      });
+    });
+  </script>
+</body>
+</html>

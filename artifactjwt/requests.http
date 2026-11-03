@@ -1,0 +1,19 @@
+### Registrar (esperado: 201)
+POST http://localhost:8080/api/auth/register
+Content-Type: application/json
+
+{"username":"estudiante2","password":"ClaveSegura123!"}
+
+### Autenticar (esperado: 200)
+# @name login
+POST http://localhost:8080/api/auth/token
+Content-Type: application/json
+
+{"username":"estudiante1","password":"ClaveSegura123!"}
+
+### Sin token (esperado: 401)
+GET http://localhost:8080/api/secured
+
+### Con token (esperado: 200)
+GET http://localhost:8080/api/secured
+Authorization: Bearer {{login.response.body.$.access_token}}
